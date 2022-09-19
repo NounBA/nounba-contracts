@@ -1,0 +1,63 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.202.5/containers/python-3
+{
+	"name": "nouns-monorepo-scaffold",
+	"runArgs": [
+		"--init"
+	],
+	"features": {
+		"node": {
+			"version": "v14.19.0",
+			"nodeGypDependencies": true
+		}
+	},
+	"forwardPorts": [
+		5050
+	],
+	// "image": "ghcr.io/bibliothecaforadventurers/loot:latest",
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"solidity.packageDefaultDependenciesContractsDirectory": "",
+		"solidity.packageDefaultDependenciesDirectory": "node_modules",
+		"python.pythonPath": "/usr/local/bin/python",
+		"python.languageServer": "Pylance",
+		"python.linting.enabled": true,
+		"python.linting.pylintEnabled": true,
+		"python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
+		"python.formatting.blackPath": "/usr/local/py-utils/bin/black",
+		"python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
+		"python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
+		"python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
+		"python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
+		"python.linting.pycodestylePath": "/usr/local/py-utils/bin/pycodestyle",
+		"python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
+		"python.linting.pylintPath": "/usr/local/py-utils/bin/pylint",
+		"eslint.validate": [
+			"javascript",
+			"javascriptreact",
+			"typescript",
+			"typescriptreact"
+		],
+		"eslint.alwaysShowStatus": true,
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": true
+		}
+	},
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"JuanBlanco.solidity",
+		"ms-python.python",
+		"ms-python.vscode-pylance",
+		"redhat.vscode-yaml",
+		"dbaeumer.vscode-eslint"
+	],
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "pip3 install --user -r requirements.txt",
+	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode",
+	"dockerFile": "../Dockerfile",
+	"context": ".."
+}
