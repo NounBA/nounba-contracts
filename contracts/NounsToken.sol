@@ -32,8 +32,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     // The nounders DAO address (creators org)
     address public noundersDAO;
 
-    // An address who has permissions to mint Nouns
-    address public minter;
+    mapping(address => bool) public mintWhitelist;
 
     // The Nouns token URI descriptor
     INounsDescriptorMinimal public descriptor;
@@ -56,8 +55,16 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     // The internal noun ID tracker
     uint256 private _currentNounId;
 
-    // The last wizard one of one ID
+    // The last one of one ID
     uint48 public lastOneOfOneId;
+
+    // keep track of amont of one of ones to know when we upload more.
+    // allows us to skip expensive one of one minting ops if we need have minted
+    // all available one of ones
+    uint256 public lastOneOfOneCount;
+
+    // one of one tracker
+    mapping(uint256 => uint8) private oneOfOneSupply;
 
     // IPFS content hash of contract-level metadata
     string private _contractURIHash =
@@ -102,7 +109,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      * @notice Require that the sender is the minter.
      */
     modifier onlyMinter() {
-        require(msg.sender == minter, "Sender is not the minter");
+        require(mintWhitelist[msg.sender] == true, "Sender is not the minter");
         _;
     }
 
@@ -114,10 +121,10 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         IProxyRegistry _proxyRegistry
     ) ERC721("Nouns", "NOUN") {
         noundersDAO = _noundersDAO;
-        minter = _minter;
         descriptor = _descriptor;
         seeder = _seeder;
         proxyRegistry = _proxyRegistry;
+        addAddressToWhitelist(_minter);
     }
 
     /**
@@ -154,6 +161,13 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         return super.isApprovedForAll(owner, operator);
     }
 
+    function mintTo(address to) public onlyMinter returns (uint256) {
+        if (_currentNounId <= 1820 && _currentNounId % 10 == 0) {
+            _mintTo(noundersDAO, _currentNounId++, false, 0);
+        }
+        return _mintTo(to, _currentNounId++, false, 0);
+    }
+
     /**
      * @notice Mint a Noun to the minter, along with a possible nounders reward
      * Noun. Nounders reward Nouns are minted every 10 Nouns, starting at 0,
@@ -162,9 +176,44 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      */
     function mint() public override onlyMinter returns (uint256) {
         if (_currentNounId <= 1820 && _currentNounId % 10 == 0) {
-            _mintTo(noundersDAO, _currentNounId++);
+            _mintTo(noundersDAO, _currentNounId++, false, 0);
         }
-        return _mintTo(minter, _currentNounId++);
+        // TODO: Fix
+        return _mintTo(noundersDAO, _currentNounId++, false, 0);
+    }
+
+    /**
+     * @notice Mint a one of one Noun to the minter.
+     * @dev Call _mintTo with the to address(es) with the one of one id to mint.
+     */
+    function mintOneOfOne(address to, uint48 oneOfOneId)
+        public
+        onlyMinter
+        returns (uint256)
+    {
+        uint256 oneCount = descriptor.oneOfOnesCount();
+
+        // validation; ensure a valid one of one index is requested
+        require(
+            uint256(oneOfOneId) < oneCount && oneOfOneId >= 0,
+            "one of one does not exist"
+        );
+
+        // validation; ensure all oneOfOnes haven't already been minted
+        require(lastOneOfOneCount < oneCount, "all one of ones minted");
+
+        // validation; only one edition of each one of one can exist
+        require(
+            oneOfOneSupply[oneOfOneId] == 0,
+            "one of one edition already minted"
+        );
+
+        uint256 nounId = _mintTo(to, _currentNounId++, true, oneOfOneId);
+
+        // set that we have minted a one of one at index
+        oneOfOneSupply[oneOfOneId] = 1;
+        lastOneOfOneId = oneOfOneId;
+        return (nounId);
     }
 
     /**
@@ -221,21 +270,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         noundersDAO = _noundersDAO;
 
         emit NoundersDAOUpdated(_noundersDAO);
-    }
-
-    /**
-     * @notice Set the token minter.
-     * @dev Only callable by the owner when not locked.
-     */
-    function setMinter(address _minter)
-        external
-        override
-        onlyOwner
-        whenMinterNotLocked
-    {
-        minter = _minter;
-
-        emit MinterUpdated(_minter);
     }
 
     /**
@@ -323,5 +357,84 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         emit NounCreated(nounId, seed);
 
         return nounId;
+    }
+
+    /* Mint Whitelist Management */
+
+    /**
+     * @dev add an address to the mintWhitelist
+     * @param addr address
+     * @return success if the address was added to the mintWhitelist, false if the address was already in the mintWhitelist
+     */
+    function addAddressToWhitelist(address addr)
+        public
+        override
+        onlyOwner
+        whenMinterNotLocked
+        returns (bool success)
+    {
+        if (!mintWhitelist[addr]) {
+            mintWhitelist[addr] = true;
+            emit MintWhitelistedAddressAdded(addr);
+            success = true;
+        }
+    }
+
+    /**
+     * @dev add addresses to the mintWhitelist
+     * @param addrs addresses
+     */
+    function addAddressesToWhitelist(address[] memory addrs)
+        public
+        override
+        onlyOwner
+        whenMinterNotLocked
+        returns (bool success)
+    {
+        for (uint256 i = 0; i < addrs.length; i++) {
+            if (addAddressToWhitelist(addrs[i])) {
+                success = true;
+            }
+        }
+    }
+
+    /**
+     * @dev remove an address from the mintWhitelist
+     * @param addr address
+     * @return success if the address was removed from the mintWhitelist,
+     * false if the address wasn't in the mintWhitelist in the first place
+     */
+    function removeAddressFromWhitelist(address addr)
+        public
+        override
+        onlyOwner
+        whenMinterNotLocked
+        returns (bool success)
+    {
+        if (mintWhitelist[addr]) {
+            mintWhitelist[addr] = false;
+            emit MintWhitelistedAddressRemoved(addr);
+            success = true;
+        }
+    }
+
+    /**
+     * @dev remove addresses from the mintWhitelist
+     * @param addrs addresses
+     * @return success if at least one address was removed from the mintWhitelist,
+     * false if all addresses weren't in the mintWhitelist in the first place
+     */
+    function removeAddressesFromWhitelist(address[] memory addrs)
+        public
+        override
+        onlyOwner
+        whenMinterNotLocked
+        returns (bool success)
+    {
+        for (uint256 i = 0; i < addrs.length; i++) {
+            if (removeAddressFromWhitelist(addrs[i])) {
+                success = true;
+            }
+        }
     }
 }

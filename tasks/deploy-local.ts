@@ -4,9 +4,10 @@ import { Interface } from 'ethers/lib/utils';
 import { Contract as EthersContract } from 'ethers';
 import { ContractName } from './types';
 
-type LocalContractName = ContractName | 'WETH';
+type LocalContractName = ContractName | 'WETH' | 'MintWhitelist' | 'NounsAuctionHouseProxy2';
 
 interface Contract {
+  artifactName?: string;
   args?: (string | number | (() => string | undefined))[];
   instance?: EthersContract;
   libraries?: () => Record<string, string>;
@@ -38,12 +39,18 @@ task('deploy-local', 'Deploy contracts to hardhat')
 
     const proxyRegistryAddress = '0xa5409ec958c83c3f309868babaca7c86dcb077c1';
 
-    const NOUNS_ART_NONCE_OFFSET = 5;
-    const AUCTION_HOUSE_PROXY_NONCE_OFFSET = 10;
-    const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 13;
+    const MINT_WHITELIST_NONCE_OFFSET = 3;
+    const NOUNS_ART_NONCE_OFFSET = 5 + 1;
+    const AUCTION_HOUSE_PROXY_NONCE_OFFSET = 10 + 1;
+    const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 13 + 1;
+
 
     const [deployer] = await ethers.getSigners();
     const nonce = await deployer.getTransactionCount();
+    const expectedMintWhitelistAddress = ethers.utils.getContractAddress({
+      from: deployer.address,
+      nonce: nonce + MINT_WHITELIST_NONCE_OFFSET,
+    });
     const expectedNounsArtAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + NOUNS_ART_NONCE_OFFSET,
@@ -56,10 +63,27 @@ task('deploy-local', 'Deploy contracts to hardhat')
       from: deployer.address,
       nonce: nonce + AUCTION_HOUSE_PROXY_NONCE_OFFSET,
     });
+
+    /* No longer used because MintWhitelist is the minter in NounsToken
+    console.log('omg');
+    console.log(ethers.utils.getContractAddress({
+      from: deployer.address,
+      nonce: nonce + NOUNS_ART_NONCE_OFFSET - 1,
+    }));
+    console.log(ethers.utils.getContractAddress({
+      from: deployer.address,
+      nonce: nonce + GOVERNOR_N_DELEGATOR_NONCE_OFFSET - 1,
+    }));
+    console.log(ethers.utils.getContractAddress({
+      from: deployer.address,
+      nonce: nonce + AUCTION_HOUSE_PROXY_NONCE_OFFSET - 1,
+    }));
+    */
     const contracts: Record<LocalContractName, Contract> = {
       WETH: {},
       NFTDescriptorV2: {},
       SVGRenderer: {},
+      MintWhitelist: {},
       NounsDescriptorV2: {
         args: [expectedNounsArtAddress, () => contracts.SVGRenderer.instance?.address],
         libraries: () => ({
@@ -102,6 +126,22 @@ task('deploy-local', 'Deploy contracts to hardhat')
             ]),
         ],
       },
+      NounsAuctionHouseProxy2: {
+        artifactName: 'NounsAuctionHouseProxy',
+        args: [
+          () => contracts.NounsAuctionHouse.instance?.address,
+          () => contracts.NounsAuctionHouseProxyAdmin.instance?.address,
+          () =>
+            new Interface(NounsAuctionHouseABI).encodeFunctionData('initialize', [
+              contracts.NounsToken.instance?.address,
+              contracts.WETH.instance?.address,
+              args.auctionTimeBuffer,
+              args.auctionReservePrice,
+              args.auctionMinIncrementBidPercentage,
+              args.auctionDuration,
+            ]),
+        ],
+      },
       NounsDAOExecutor: {
         args: [expectedNounsDAOProxyAddress, args.timelockDelay],
       },
@@ -124,7 +164,11 @@ task('deploy-local', 'Deploy contracts to hardhat')
     };
 
     for (const [name, contract] of Object.entries(contracts)) {
-      const factory = await ethers.getContractFactory(name, {
+      console.log(`Deploying ${name}`);
+
+      const artifactName = contract.artifactName || name;
+
+      const factory = await ethers.getContractFactory(artifactName, {
         libraries: contract?.libraries?.(),
       });
 

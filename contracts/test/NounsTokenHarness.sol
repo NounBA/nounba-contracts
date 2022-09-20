@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.15;
 
-import { NounsToken } from '../NounsToken.sol';
-import { INounsDescriptorMinimal } from '../interfaces/INounsDescriptorMinimal.sol';
-import { INounsSeeder } from '../interfaces/INounsSeeder.sol';
-import { IProxyRegistry } from '../external/opensea/IProxyRegistry.sol';
+import {NounsToken} from "../NounsToken.sol";
+import {INounsDescriptorMinimal} from "../interfaces/INounsDescriptorMinimal.sol";
+import {INounsSeeder} from "../interfaces/INounsSeeder.sol";
+import {IProxyRegistry} from "../external/opensea/IProxyRegistry.sol";
 
 contract NounsTokenHarness is NounsToken {
     uint256 public currentNounId;
@@ -18,13 +18,17 @@ contract NounsTokenHarness is NounsToken {
         IProxyRegistry proxyRegistry
     ) NounsToken(noundersDAO, minter, descriptor, seeder, proxyRegistry) {}
 
-    function mintTo(address to) public {
-        _mintTo(to, currentNounId++);
+    function mintTo(
+        address to,
+        bool isOneOfOne,
+        uint48 oneOfOneIndex
+    ) public {
+        _mintTo(to, currentNounId++, isOneOfOne, oneOfOneIndex);
     }
 
     function mintMany(address to, uint256 amount) public {
         for (uint256 i = 0; i < amount; i++) {
-            mintTo(to);
+            mintTo(to, false, 0);
         }
     }
 
@@ -34,14 +38,18 @@ contract NounsTokenHarness is NounsToken {
         uint48 body,
         uint48 accessory,
         uint48 head,
-        uint48 glasses
+        uint48 glasses,
+        bool isOneOfOne,
+        uint48 oneOfOneIndex
     ) public {
         seeds[currentNounId] = INounsSeeder.Seed({
             background: background,
             body: body,
             accessory: accessory,
             head: head,
-            glasses: glasses
+            glasses: glasses,
+            oneOfOne: isOneOfOne,
+            oneOfOneIndex: oneOfOneIndex
         });
 
         _mint(owner(), to, currentNounId++);

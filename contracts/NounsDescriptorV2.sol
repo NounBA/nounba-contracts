@@ -17,14 +17,14 @@
 
 pragma solidity ^0.8.6;
 
-import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
-import { Strings } from '@openzeppelin/contracts/utils/Strings.sol';
-import { INounsDescriptorV2 } from './interfaces/INounsDescriptorV2.sol';
-import { INounsSeeder } from './interfaces/INounsSeeder.sol';
-import { NFTDescriptorV2 } from './libs/NFTDescriptorV2.sol';
-import { ISVGRenderer } from './interfaces/ISVGRenderer.sol';
-import { INounsArt } from './interfaces/INounsArt.sol';
-import { IInflator } from './interfaces/IInflator.sol';
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {INounsDescriptorV2} from "./interfaces/INounsDescriptorV2.sol";
+import {INounsSeeder} from "./interfaces/INounsSeeder.sol";
+import {NFTDescriptorV2} from "./libs/NFTDescriptorV2.sol";
+import {ISVGRenderer} from "./interfaces/ISVGRenderer.sol";
+import {INounsArt} from "./interfaces/INounsArt.sol";
+import {IInflator} from "./interfaces/IInflator.sol";
 
 contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
     using Strings for uint256;
@@ -52,7 +52,7 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * @notice Require that the parts have not been locked.
      */
     modifier whenPartsNotLocked() {
-        require(!arePartsLocked, 'Parts are locked');
+        require(!arePartsLocked, "Parts are locked");
         _;
     }
 
@@ -135,10 +135,22 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
     }
 
     /**
+     * @notice Get the number of available Noun `one-of-ones`.
+     */
+    function oneOfOnesCount() external view override returns (uint256) {
+        return art.getOneOfOnesTrait().storedImagesCount;
+    }
+
+    /**
      * @notice Batch add Noun backgrounds.
      * @dev This function can only be called by the owner when not locked.
      */
-    function addManyBackgrounds(string[] calldata _backgrounds) external override onlyOwner whenPartsNotLocked {
+    function addManyBackgrounds(string[] calldata _backgrounds)
+        external
+        override
+        onlyOwner
+        whenPartsNotLocked
+    {
         art.addManyBackgrounds(_backgrounds);
     }
 
@@ -146,7 +158,12 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * @notice Add a Noun background.
      * @dev This function can only be called by the owner when not locked.
      */
-    function addBackground(string calldata _background) external override onlyOwner whenPartsNotLocked {
+    function addBackground(string calldata _background)
+        external
+        override
+        onlyOwner
+        whenPartsNotLocked
+    {
         art.addBackground(_background);
     }
 
@@ -157,7 +174,12 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * @param palette byte array of colors. every 3 bytes represent an RGB color. max length: 256 * 3 = 768
      * @dev This function can only be called by the owner when not locked.
      */
-    function setPalette(uint8 paletteIndex, bytes calldata palette) external override onlyOwner whenPartsNotLocked {
+    function setPalette(uint8 paletteIndex, bytes calldata palette)
+        external
+        override
+        onlyOwner
+        whenPartsNotLocked
+    {
         art.setPalette(paletteIndex, palette);
     }
 
@@ -234,7 +256,12 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * max length: 256 * 3 = 768.
      * @dev This function can only be called by the owner when not locked.
      */
-    function setPalettePointer(uint8 paletteIndex, address pointer) external override onlyOwner whenPartsNotLocked {
+    function setPalettePointer(uint8 paletteIndex, address pointer)
+        external
+        override
+        onlyOwner
+        whenPartsNotLocked
+    {
         art.setPalettePointer(paletteIndex, pointer);
     }
 
@@ -311,7 +338,12 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * @param index the index of the background.
      * @return string the RGB hex value of the background.
      */
-    function backgrounds(uint256 index) public view override returns (string memory) {
+    function backgrounds(uint256 index)
+        public
+        view
+        override
+        returns (string memory)
+    {
         return art.backgrounds(index);
     }
 
@@ -338,7 +370,12 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * @param index the index of the accessory.
      * @return bytes the RLE-encoded bytes of the image.
      */
-    function accessories(uint256 index) public view override returns (bytes memory) {
+    function accessories(uint256 index)
+        public
+        view
+        override
+        returns (bytes memory)
+    {
         return art.accessories(index);
     }
 
@@ -347,8 +384,27 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * @param index the index of the glasses.
      * @return bytes the RLE-encoded bytes of the image.
      */
-    function glasses(uint256 index) public view override returns (bytes memory) {
+    function glasses(uint256 index)
+        public
+        view
+        override
+        returns (bytes memory)
+    {
         return art.glasses(index);
+    }
+
+    /**
+     * @notice Get a one-of-one image by ID.
+     * @param index the index of the one-of-one.
+     * @return bytes the RLE-encoded bytes of the image.
+     */
+    function oneOfOnes(uint256 index)
+        public
+        view
+        override
+        returns (bytes memory)
+    {
+        return art.oneOfOnes(index);
     }
 
     /**
@@ -398,7 +454,12 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * @notice Given a token ID and seed, construct a token URI for an official Nouns DAO noun.
      * @dev The returned value may be a base64 encoded data URI or an API URL.
      */
-    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed) external view override returns (string memory) {
+    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed)
+        external
+        view
+        override
+        returns (string memory)
+    {
         if (isDataURIEnabled) {
             return dataURI(tokenId, seed);
         }
@@ -408,10 +469,17 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
     /**
      * @notice Given a token ID and seed, construct a base64 encoded data URI for an official Nouns DAO noun.
      */
-    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed) public view override returns (string memory) {
+    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed)
+        public
+        view
+        override
+        returns (string memory)
+    {
         string memory nounId = tokenId.toString();
-        string memory name = string(abi.encodePacked('Noun ', nounId));
-        string memory description = string(abi.encodePacked('Noun ', nounId, ' is a member of the Nouns DAO'));
+        string memory name = string(abi.encodePacked("Noun ", nounId));
+        string memory description = string(
+            abi.encodePacked("Noun ", nounId, " is a member of the Nouns DAO")
+        );
 
         return genericDataURI(name, description, seed);
     }
@@ -424,19 +492,25 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
         string memory description,
         INounsSeeder.Seed memory seed
     ) public view override returns (string memory) {
-        NFTDescriptorV2.TokenURIParams memory params = NFTDescriptorV2.TokenURIParams({
-            name: name,
-            description: description,
-            parts: getPartsForSeed(seed),
-            background: art.backgrounds(seed.background)
-        });
+        NFTDescriptorV2.TokenURIParams memory params = NFTDescriptorV2
+            .TokenURIParams({
+                name: name,
+                description: description,
+                parts: getPartsForSeed(seed),
+                background: art.backgrounds(seed.background)
+            });
         return NFTDescriptorV2.constructTokenURI(renderer, params);
     }
 
     /**
      * @notice Given a seed, construct a base64 encoded SVG image.
      */
-    function generateSVGImage(INounsSeeder.Seed memory seed) external view override returns (string memory) {
+    function generateSVGImage(INounsSeeder.Seed memory seed)
+        external
+        view
+        override
+        returns (string memory)
+    {
         ISVGRenderer.SVGParams memory params = ISVGRenderer.SVGParams({
             parts: getPartsForSeed(seed),
             background: art.backgrounds(seed.background)
@@ -447,24 +521,38 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
     /**
      * @notice Get all Noun parts for the passed `seed`.
      */
-    function getPartsForSeed(INounsSeeder.Seed memory seed) public view returns (ISVGRenderer.Part[] memory) {
+    function getPartsForSeed(INounsSeeder.Seed memory seed)
+        public
+        view
+        returns (ISVGRenderer.Part[] memory)
+    {
         bytes memory body = art.bodies(seed.body);
         bytes memory accessory = art.accessories(seed.accessory);
         bytes memory head = art.heads(seed.head);
         bytes memory glasses_ = art.glasses(seed.glasses);
 
         ISVGRenderer.Part[] memory parts = new ISVGRenderer.Part[](4);
-        parts[0] = ISVGRenderer.Part({ image: body, palette: _getPalette(body) });
-        parts[1] = ISVGRenderer.Part({ image: accessory, palette: _getPalette(accessory) });
-        parts[2] = ISVGRenderer.Part({ image: head, palette: _getPalette(head) });
-        parts[3] = ISVGRenderer.Part({ image: glasses_, palette: _getPalette(glasses_) });
+        parts[0] = ISVGRenderer.Part({image: body, palette: _getPalette(body)});
+        parts[1] = ISVGRenderer.Part({
+            image: accessory,
+            palette: _getPalette(accessory)
+        });
+        parts[2] = ISVGRenderer.Part({image: head, palette: _getPalette(head)});
+        parts[3] = ISVGRenderer.Part({
+            image: glasses_,
+            palette: _getPalette(glasses_)
+        });
         return parts;
     }
 
     /**
      * @notice Get the color palette pointer for the passed part.
      */
-    function _getPalette(bytes memory part) private view returns (bytes memory) {
+    function _getPalette(bytes memory part)
+        private
+        view
+        returns (bytes memory)
+    {
         return art.palettes(uint8(part[0]));
     }
 }

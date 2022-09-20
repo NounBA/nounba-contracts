@@ -17,9 +17,9 @@
 
 pragma solidity ^0.8.6;
 
-import { INounsArt } from './interfaces/INounsArt.sol';
-import { SSTORE2 } from './libs/SSTORE2.sol';
-import { IInflator } from './interfaces/IInflator.sol';
+import {INounsArt} from "./interfaces/INounsArt.sol";
+import {SSTORE2} from "./libs/SSTORE2.sol";
+import {IInflator} from "./interfaces/IInflator.sol";
 
 contract NounsArt is INounsArt {
     /// @notice Current Nouns Descriptor address
@@ -46,6 +46,9 @@ contract NounsArt is INounsArt {
     /// @notice Noun Glasses Trait
     Trait public glassesTrait;
 
+    /// @notice Trait for the one-of-ones
+    Trait public oneOfOnesTrait;
+
     /**
      * @notice Require that the sender is the descriptor.
      */
@@ -65,7 +68,11 @@ contract NounsArt is INounsArt {
      * @notice Set the descriptor.
      * @dev This function can only be called by the current descriptor.
      */
-    function setDescriptor(address _descriptor) external override onlyDescriptor {
+    function setDescriptor(address _descriptor)
+        external
+        override
+        onlyDescriptor
+    {
         address oldDescriptor = descriptor;
         descriptor = _descriptor;
 
@@ -99,7 +106,12 @@ contract NounsArt is INounsArt {
      * https://github.com/ethereum/solidity/issues/11826
      * @return Trait the struct, including a total image count, and an array of storage pages.
      */
-    function getAccessoriesTrait() external view override returns (Trait memory) {
+    function getAccessoriesTrait()
+        external
+        view
+        override
+        returns (Trait memory)
+    {
         return accessoriesTrait;
     }
 
@@ -124,10 +136,24 @@ contract NounsArt is INounsArt {
     }
 
     /**
+     * @notice Get the Trait struct for one-of-ones.
+     * @dev This explicit getter is needed because implicit getters for structs aren't fully supported yet:
+     * https://github.com/ethereum/solidity/issues/11826
+     * @return Trait the struct, including a total image count, and an array of storage pages.
+     */
+    function getOneOfOnesTrait() external view override returns (Trait memory) {
+        return oneOfOnesTrait;
+    }
+
+    /**
      * @notice Batch add Noun backgrounds.
      * @dev This function can only be called by the descriptor.
      */
-    function addManyBackgrounds(string[] calldata _backgrounds) external override onlyDescriptor {
+    function addManyBackgrounds(string[] calldata _backgrounds)
+        external
+        override
+        onlyDescriptor
+    {
         for (uint256 i = 0; i < _backgrounds.length; i++) {
             _addBackground(_backgrounds[i]);
         }
@@ -139,7 +165,11 @@ contract NounsArt is INounsArt {
      * @notice Add a Noun background.
      * @dev This function can only be called by the descriptor.
      */
-    function addBackground(string calldata _background) external override onlyDescriptor {
+    function addBackground(string calldata _background)
+        external
+        override
+        onlyDescriptor
+    {
         _addBackground(_background);
 
         emit BackgroundsAdded(1);
@@ -152,7 +182,11 @@ contract NounsArt is INounsArt {
      * @param palette byte array of colors. every 3 bytes represent an RGB color. max length: 256 * 3 = 768
      * @dev This function can only be called by the descriptor.
      */
-    function setPalette(uint8 paletteIndex, bytes calldata palette) external override onlyDescriptor {
+    function setPalette(uint8 paletteIndex, bytes calldata palette)
+        external
+        override
+        onlyDescriptor
+    {
         if (palette.length == 0) {
             revert EmptyPalette();
         }
@@ -195,7 +229,12 @@ contract NounsArt is INounsArt {
         uint80 decompressedLength,
         uint16 imageCount
     ) external override onlyDescriptor {
-        addPage(accessoriesTrait, encodedCompressed, decompressedLength, imageCount);
+        addPage(
+            accessoriesTrait,
+            encodedCompressed,
+            decompressedLength,
+            imageCount
+        );
 
         emit AccessoriesAdded(imageCount);
     }
@@ -231,7 +270,12 @@ contract NounsArt is INounsArt {
         uint80 decompressedLength,
         uint16 imageCount
     ) external override onlyDescriptor {
-        addPage(glassesTrait, encodedCompressed, decompressedLength, imageCount);
+        addPage(
+            glassesTrait,
+            encodedCompressed,
+            decompressedLength,
+            imageCount
+        );
 
         emit GlassesAdded(imageCount);
     }
@@ -245,7 +289,11 @@ contract NounsArt is INounsArt {
      * max length: 256 * 3 = 768.
      * @dev This function can only be called by the descriptor.
      */
-    function setPalettePointer(uint8 paletteIndex, address pointer) external override onlyDescriptor {
+    function setPalettePointer(uint8 paletteIndex, address pointer)
+        external
+        override
+        onlyDescriptor
+    {
         palettesPointers[paletteIndex] = pointer;
 
         emit PaletteSet(paletteIndex);
@@ -351,21 +399,48 @@ contract NounsArt is INounsArt {
     /**
      * @notice Get a accessory image bytes (RLE-encoded).
      */
-    function accessories(uint256 index) public view override returns (bytes memory) {
+    function accessories(uint256 index)
+        public
+        view
+        override
+        returns (bytes memory)
+    {
         return imageByIndex(accessoriesTrait, index);
     }
 
     /**
      * @notice Get a glasses image bytes (RLE-encoded).
      */
-    function glasses(uint256 index) public view override returns (bytes memory) {
+    function glasses(uint256 index)
+        public
+        view
+        override
+        returns (bytes memory)
+    {
         return imageByIndex(glassesTrait, index);
+    }
+
+    /**
+     * @notice Get a one-of-one image bytes (RLE-encoded).
+     */
+    function oneOfOnes(uint256 index)
+        public
+        view
+        override
+        returns (bytes memory)
+    {
+        return imageByIndex(oneOfOnesTrait, index);
     }
 
     /**
      * @notice Get a color palette bytes.
      */
-    function palettes(uint8 paletteIndex) public view override returns (bytes memory) {
+    function palettes(uint8 paletteIndex)
+        public
+        view
+        override
+        returns (bytes memory)
+    {
         address pointer = palettesPointers[paletteIndex];
         if (pointer == address(0)) {
             revert PaletteNotFound();
@@ -403,13 +478,24 @@ contract NounsArt is INounsArt {
             revert BadImageCount();
         }
         trait.storagePages.push(
-            NounArtStoragePage({ pointer: pointer, decompressedLength: decompressedLength, imageCount: imageCount })
+            NounArtStoragePage({
+                pointer: pointer,
+                decompressedLength: decompressedLength,
+                imageCount: imageCount
+            })
         );
         trait.storedImagesCount += imageCount;
     }
 
-    function imageByIndex(INounsArt.Trait storage trait, uint256 index) internal view returns (bytes memory) {
-        (INounsArt.NounArtStoragePage storage page, uint256 indexInPage) = getPage(trait.storagePages, index);
+    function imageByIndex(INounsArt.Trait storage trait, uint256 index)
+        internal
+        view
+        returns (bytes memory)
+    {
+        (
+            INounsArt.NounArtStoragePage storage page,
+            uint256 indexInPage
+        ) = getPage(trait.storagePages, index);
         bytes[] memory decompressedImages = decompressAndDecode(page);
         return decompressedImages[indexInPage];
     }
@@ -422,11 +508,10 @@ contract NounsArt is INounsArt {
      * @return INounsArt.NounArtStoragePage the page containing the image at index
      * @return uint256 the index of the image in the page
      */
-    function getPage(INounsArt.NounArtStoragePage[] storage pages, uint256 index)
-        internal
-        view
-        returns (INounsArt.NounArtStoragePage storage, uint256)
-    {
+    function getPage(
+        INounsArt.NounArtStoragePage[] storage pages,
+        uint256 index
+    ) internal view returns (INounsArt.NounArtStoragePage storage, uint256) {
         uint256 len = pages.length;
         uint256 pageFirstImageIndex = 0;
         for (uint256 i = 0; i < len; i++) {
@@ -442,9 +527,16 @@ contract NounsArt is INounsArt {
         revert ImageNotFound();
     }
 
-    function decompressAndDecode(INounsArt.NounArtStoragePage storage page) internal view returns (bytes[] memory) {
+    function decompressAndDecode(INounsArt.NounArtStoragePage storage page)
+        internal
+        view
+        returns (bytes[] memory)
+    {
         bytes memory compressedData = SSTORE2.read(page.pointer);
-        (, bytes memory decompressedData) = inflator.puff(compressedData, page.decompressedLength);
+        (, bytes memory decompressedData) = inflator.puff(
+            compressedData,
+            page.decompressedLength
+        );
         return abi.decode(decompressedData, (bytes[]));
     }
 }

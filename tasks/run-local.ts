@@ -19,11 +19,43 @@ task(
     nounsDescriptor: contracts.NounsDescriptorV2.instance.address,
   });
 
-  await contracts.NounsAuctionHouse.instance
+  const auctionHouseContract = contracts.NounsAuctionHouse.instance
+    .attach(contracts.NounsAuctionHouseProxy.instance.address);
+
+  const unpauseresult = await contracts.NounsAuctionHouse.instance
     .attach(contracts.NounsAuctionHouseProxy.instance.address)
     .unpause({
       gasLimit: 1_000_000,
     });
+  console.log(unpauseresult);
+  const waitresult = await unpauseresult.wait();
+  console.log(waitresult);
+
+  const addMinterResult = await (await contracts.NounsToken.instance
+    .attach(contracts.NounsToken.instance.address)
+    .addAddressToWhitelist(contracts.NounsAuctionHouseProxy2.instance.address, {
+      gasLimit: 1_000_000,
+    })).wait();
+
+  await contracts.NounsAuctionHouse.instance
+    .attach(contracts.NounsAuctionHouseProxy2.instance.address)
+    .unpause({
+      gasLimit: 1_000_000,
+    });
+
+  const auction = await contracts.NounsAuctionHouse.instance
+    .attach(contracts.NounsAuctionHouseProxy.instance.address)
+    .auction({
+      gasLimit: 1_000_000,
+    });
+  console.log('seriously');
+  console.log(auction);
+  const nounowner = await contracts.NounsToken.instance
+    .attach(contracts.NounsToken.instance.address)
+    .owner({
+      gasLimit: 1_000_000,
+    });
+  console.log(nounowner);
 
   // Transfer ownership
   const executorAddress = contracts.NounsDAOExecutor.instance.address;
@@ -59,6 +91,7 @@ task(
     `Noun contracts deployed to local node at http://localhost:8545 (Chain ID: ${chainId})`,
   );
   console.log(`Auction House Proxy address: ${contracts.NounsAuctionHouseProxy.instance.address}`);
+  console.log(`Auction House Proxy 2 address: ${contracts.NounsAuctionHouseProxy2.instance.address}`);
   console.log(`Nouns ERC721 address: ${contracts.NounsToken.instance.address}`);
   console.log(`Nouns DAO Executor address: ${contracts.NounsDAOExecutor.instance.address}`);
   console.log(`Nouns DAO Proxy address: ${contracts.NounsDAOProxy.instance.address}`);

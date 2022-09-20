@@ -17,10 +17,10 @@
 
 pragma solidity ^0.8.6;
 
-import { INounsSeeder } from './INounsSeeder.sol';
-import { ISVGRenderer } from './ISVGRenderer.sol';
-import { INounsArt } from './INounsArt.sol';
-import { INounsDescriptorMinimal } from './INounsDescriptorMinimal.sol';
+import {INounsSeeder} from "./INounsSeeder.sol";
+import {ISVGRenderer} from "./ISVGRenderer.sol";
+import {INounsArt} from "./INounsArt.sol";
+import {INounsDescriptorMinimal} from "./INounsDescriptorMinimal.sol";
 
 interface INounsDescriptorV2 is INounsDescriptorMinimal {
     event PartsLocked();
@@ -55,6 +55,8 @@ interface INounsDescriptorV2 is INounsDescriptorMinimal {
 
     function glasses(uint256 index) external view returns (bytes memory);
 
+    function oneOfOnes(uint256 index) external view returns (bytes memory);
+
     function backgroundCount() external view override returns (uint256);
 
     function bodyCount() external view override returns (uint256);
@@ -64,6 +66,8 @@ interface INounsDescriptorV2 is INounsDescriptorMinimal {
     function headCount() external view override returns (uint256);
 
     function glassesCount() external view override returns (uint256);
+
+    function oneOfOnesCount() external view returns (uint256);
 
     function addManyBackgrounds(string[] calldata backgrounds) external;
 
@@ -127,9 +131,17 @@ interface INounsDescriptorV2 is INounsDescriptorMinimal {
 
     function setBaseURI(string calldata baseURI) external;
 
-    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed) external view override returns (string memory);
+    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed)
+        external
+        view
+        override
+        returns (string memory);
 
-    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed) external view override returns (string memory);
+    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed)
+        external
+        view
+        override
+        returns (string memory);
 
     function genericDataURI(
         string calldata name,
@@ -137,5 +149,8 @@ interface INounsDescriptorV2 is INounsDescriptorMinimal {
         INounsSeeder.Seed memory seed
     ) external view returns (string memory);
 
-    function generateSVGImage(INounsSeeder.Seed memory seed) external view returns (string memory);
+    function generateSVGImage(INounsSeeder.Seed memory seed)
+        external
+        view
+        returns (string memory);
 }
