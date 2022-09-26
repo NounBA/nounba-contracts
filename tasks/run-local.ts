@@ -5,12 +5,9 @@ task(
   'run-local',
   'Start a hardhat node, deploy contracts, and execute setup transactions',
 ).setAction(async (_, { ethers, run }) => {
-  console.log('Running local');
   await run(TASK_COMPILE);
-  console.log('TASK_COMPILE completed');
 
   await Promise.race([run(TASK_NODE), new Promise(resolve => setTimeout(resolve, 2_000))]);
-  console.log('TASK_NODE completed');
 
   const contracts = await run('deploy-local');
 
@@ -19,43 +16,67 @@ task(
     nounsDescriptor: contracts.NounsDescriptorV2.instance.address,
   });
 
-  const auctionHouseContract = contracts.NounsAuctionHouse.instance
-    .attach(contracts.NounsAuctionHouseProxy.instance.address);
-
-  const unpauseresult = await contracts.NounsAuctionHouse.instance
+  const unpauseResult = await (await contracts.NounsAuctionHouse.instance
     .attach(contracts.NounsAuctionHouseProxy.instance.address)
     .unpause({
       gasLimit: 1_000_000,
-    });
-  console.log(unpauseresult);
-  const waitresult = await unpauseresult.wait();
-  console.log(waitresult);
+    })).wait();
+  console.log(unpauseResult);
+  console.log(unpauseResult.events.map((e: any) => e.args));
 
-  const addMinterResult = await (await contracts.NounsToken.instance
+  const auction1 = await contracts.NounsAuctionHouse.instance
+    .attach(contracts.NounsAuctionHouseProxy.instance.address)
+    .auction({
+      gasLimit: 1_000_000,
+    });
+
+  console.log('Auction 1');
+  console.log(auction1);
+
+  await (await contracts.NounsToken.instance
     .attach(contracts.NounsToken.instance.address)
     .addAddressToWhitelist(contracts.NounsAuctionHouseProxy2.instance.address, {
       gasLimit: 1_000_000,
     })).wait();
 
-  await contracts.NounsAuctionHouse.instance
+  const unpauseResult2 = await (await contracts.NounsAuctionHouse.instance
     .attach(contracts.NounsAuctionHouseProxy2.instance.address)
     .unpause({
       gasLimit: 1_000_000,
-    });
+    })).wait();
+  console.log(unpauseResult2);
+  console.log(unpauseResult2.events.map((e: any) => e.args));
 
-  const auction = await contracts.NounsAuctionHouse.instance
-    .attach(contracts.NounsAuctionHouseProxy.instance.address)
+  const auction2 = await contracts.NounsAuctionHouse.instance
+    .attach(contracts.NounsAuctionHouseProxy2.instance.address)
     .auction({
       gasLimit: 1_000_000,
     });
-  console.log('seriously');
-  console.log(auction);
+  console.log('Auction 2');
+  console.log(auction2);
   const nounowner = await contracts.NounsToken.instance
     .attach(contracts.NounsToken.instance.address)
     .owner({
       gasLimit: 1_000_000,
     });
   console.log(nounowner);
+
+
+  const seed0 = await contracts.NounsToken.instance
+    .attach(contracts.NounsToken.instance.address)
+    .seeds(0, {
+      gasLimit: 1_000_000,
+    });
+  console.log(seed0);
+
+  const noun0 = await contracts.NounsToken.instance
+    .attach(contracts.NounsToken.instance.address)
+    .tokenURI(0, {
+      gasLimit: 9_000_000_000_000_000,
+    });
+  console.log(noun0);
+  /*
+  */
 
   // Transfer ownership
   const executorAddress = contracts.NounsDAOExecutor.instance.address;

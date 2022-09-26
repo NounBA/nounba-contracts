@@ -1,5 +1,5 @@
 import { task, types } from 'hardhat/config';
-import ImageData from '../files/image-data-v2.json';
+import ImageData from '../files/image-data-nounba.json';
 import { dataToDescriptorInput } from './utils';
 
 task('populate-descriptor', 'Populates the descriptor with color palettes and Noun parts')
@@ -26,8 +26,9 @@ task('populate-descriptor', 'Populates the descriptor with color palettes and No
     const descriptorContract = descriptorFactory.attach(nounsDescriptor);
 
     const { bgcolors, palette, images } = ImageData;
-    const { bodies, accessories, heads, glasses } = images;
+    const { oneOfOnes, bodies, accessories, heads, glasses } = images;
 
+    const oneOfOnesPage = dataToDescriptorInput(oneOfOnes.map(({ data }) => data));
     const bodiesPage = dataToDescriptorInput(bodies.map(({ data }) => data));
     const headsPage = dataToDescriptorInput(heads.map(({ data }) => data));
     const glassesPage = dataToDescriptorInput(glasses.map(({ data }) => data));
@@ -58,6 +59,12 @@ task('populate-descriptor', 'Populates the descriptor with color palettes and No
       accessoriesPage.encodedCompressed,
       accessoriesPage.originalLength,
       accessoriesPage.itemCount,
+      options,
+    );
+    await descriptorContract.addOneOfOnes(
+      oneOfOnesPage.encodedCompressed,
+      oneOfOnesPage.originalLength,
+      oneOfOnesPage.itemCount,
       options,
     );
 

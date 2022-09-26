@@ -248,6 +248,22 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
     }
 
     /**
+     * @notice Add a batch of one-of-one images.
+     * @param encodedCompressed bytes created by taking a string array of RLE-encoded images, abi encoding it as a bytes array,
+     * and finally compressing it using deflate.
+     * @param decompressedLength the size in bytes the images bytes were prior to compression; required input for Inflate.
+     * @param imageCount the number of images in this batch; used when searching for images among batches.
+     * @dev This function can only be called by the owner when not locked.
+     */
+    function addOneOfOnes(
+        bytes calldata encodedCompressed,
+        uint80 decompressedLength,
+        uint16 imageCount
+    ) external override onlyOwner whenPartsNotLocked {
+        art.addOneOfOnes(encodedCompressed, decompressedLength, imageCount);
+    }
+
+    /**
      * @notice Update a single color palette. This function can be used to
      * add a new color palette or update an existing palette. This function does not check for data length validity
      * (len <= 768, len % 3 == 0).
@@ -331,6 +347,23 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
         uint16 imageCount
     ) external override onlyOwner whenPartsNotLocked {
         art.addGlassesFromPointer(pointer, decompressedLength, imageCount);
+    }
+
+    /**
+     * @notice Add a batch of one-of-one images from an existing storage contract.
+     * @param pointer the address of a contract where the image batch was stored using SSTORE2. The data
+     * format is expected to be like {encodedCompressed}: bytes created by taking a string array of
+     * RLE-encoded images, abi encoding it as a bytes array, and finally compressing it using deflate.
+     * @param decompressedLength the size in bytes the images bytes were prior to compression; required input for Inflate.
+     * @param imageCount the number of images in this batch; used when searching for images among batches.
+     * @dev This function can only be called by the owner when not locked.
+     */
+    function addOneOfOnesFromPointer(
+        address pointer,
+        uint80 decompressedLength,
+        uint16 imageCount
+    ) external override onlyOwner whenPartsNotLocked {
+        art.addOneOfOnesFromPointer(pointer, decompressedLength, imageCount);
     }
 
     /**
@@ -530,8 +563,9 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
         bytes memory accessory = art.accessories(seed.accessory);
         bytes memory head = art.heads(seed.head);
         bytes memory glasses_ = art.glasses(seed.glasses);
+        bytes memory oneOfOne = art.oneOfOnes(seed.oneOfOneIndex);
 
-        ISVGRenderer.Part[] memory parts = new ISVGRenderer.Part[](4);
+        ISVGRenderer.Part[] memory parts = new ISVGRenderer.Part[](5);
         parts[0] = ISVGRenderer.Part({image: body, palette: _getPalette(body)});
         parts[1] = ISVGRenderer.Part({
             image: accessory,
@@ -541,6 +575,10 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
         parts[3] = ISVGRenderer.Part({
             image: glasses_,
             palette: _getPalette(glasses_)
+        });
+        parts[4] = ISVGRenderer.Part({
+            image: oneOfOne,
+            palette: _getPalette(oneOfOne)
         });
         return parts;
     }

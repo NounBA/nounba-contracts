@@ -106,6 +106,12 @@ interface INounsArt {
         uint16 imageCount
     ) external;
 
+    function addOneOfOnes(
+        bytes calldata encodedCompressed,
+        uint80 decompressedLength,
+        uint16 imageCount
+    ) external;
+
     function addBodiesFromPointer(
         address pointer,
         uint80 decompressedLength,
@@ -127,6 +133,12 @@ interface INounsArt {
     ) external;
 
     function addGlassesFromPointer(
+        address pointer,
+        uint80 decompressedLength,
+        uint16 imageCount
+    ) external;
+
+    function addOneOfOnesFromPointer(
         address pointer,
         uint80 decompressedLength,
         uint16 imageCount

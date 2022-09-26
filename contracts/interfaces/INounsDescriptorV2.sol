@@ -99,6 +99,12 @@ interface INounsDescriptorV2 is INounsDescriptorMinimal {
         uint16 imageCount
     ) external;
 
+    function addOneOfOnes(
+        bytes calldata encodedCompressed,
+        uint80 decompressedLength,
+        uint16 imageCount
+    ) external;
+
     function setPalettePointer(uint8 paletteIndex, address pointer) external;
 
     function addBodiesFromPointer(
@@ -120,6 +126,12 @@ interface INounsDescriptorV2 is INounsDescriptorMinimal {
     ) external;
 
     function addGlassesFromPointer(
+        address pointer,
+        uint80 decompressedLength,
+        uint16 imageCount
+    ) external;
+
+    function addOneOfOnesFromPointer(
         address pointer,
         uint80 decompressedLength,
         uint16 imageCount

@@ -217,7 +217,9 @@ contract NounsAuctionHouse is
      * catch the revert and pause this contract.
      */
     function _createAuction() internal {
-        try nouns.mintTo(address(this)) returns (uint256 nounId) {
+        // nouns.mintTo(address(this));
+        try nouns.mintOneOfOne(address(this), 1) returns (uint256 nounId) {
+            // try nouns.mintTo(address(this)) returns (uint256 nounId) {
             uint256 startTime = block.timestamp;
             uint256 endTime = startTime + duration;
 

@@ -203,10 +203,12 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         require(lastOneOfOneCount < oneCount, "all one of ones minted");
 
         // validation; only one edition of each one of one can exist
+        /* TODO: uncomment
         require(
             oneOfOneSupply[oneOfOneId] == 0,
             "one of one edition already minted"
         );
+        */
 
         uint256 nounId = _mintTo(to, _currentNounId++, true, oneOfOneId);
 
