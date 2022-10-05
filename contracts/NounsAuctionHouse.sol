@@ -59,6 +59,12 @@ contract NounsAuctionHouse is
     // The active auction
     INounsAuctionHouse.Auction public auction;
 
+    // The oneOfOneIndex of the next NFT to be auctioned
+    uint48 public nextOneOfOneIndex;
+
+    // The last oneOfOneIndex that this auction house contract should be allowed to mint
+    uint48 public maxOneOfOneIndex;
+
     /**
      * @notice Initialize the auction house and base contracts,
      * populate configuration values, and pause the contract.
@@ -70,7 +76,9 @@ contract NounsAuctionHouse is
         uint256 _timeBuffer,
         uint256 _reservePrice,
         uint8 _minBidIncrementPercentage,
-        uint256 _duration
+        uint256 _duration,
+        uint48 _nextOneOfOneIndex,
+        uint48 _maxOneOfOneIndex
     ) external initializer {
         __Pausable_init();
         __ReentrancyGuard_init();
@@ -84,6 +92,8 @@ contract NounsAuctionHouse is
         reservePrice = _reservePrice;
         minBidIncrementPercentage = _minBidIncrementPercentage;
         duration = _duration;
+        nextOneOfOneIndex = _nextOneOfOneIndex;
+        maxOneOfOneIndex = _maxOneOfOneIndex;
     }
 
     /**
@@ -217,8 +227,14 @@ contract NounsAuctionHouse is
      * catch the revert and pause this contract.
      */
     function _createAuction() internal {
-        // nouns.mintTo(address(this));
-        try nouns.mintOneOfOne(address(this), 1) returns (uint256 nounId) {
+        // validation; ensure a valid one of one index is requested
+        require(
+            nextOneOfOneIndex <= maxOneOfOneIndex,
+            "one of one does not exist"
+        );
+        try nouns.mintOneOfOne(address(this), nextOneOfOneIndex++) returns (
+            uint256 nounId
+        ) {
             // try nouns.mintTo(address(this)) returns (uint256 nounId) {
             uint256 startTime = block.timestamp;
             uint256 endTime = startTime + duration;

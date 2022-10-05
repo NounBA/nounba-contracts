@@ -7,9 +7,19 @@
         "type": "uint256"
       },
       {
-        "internalType": "contract INounsDescriptor",
+        "internalType": "contract INounsDescriptorMinimal",
         "name": "descriptor",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "isOneOfOne",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint48",
+        "name": "oneOfOneIndex",
+        "type": "uint48"
       }
     ],
     "name": "generateSeed",
@@ -39,6 +49,16 @@
           {
             "internalType": "uint48",
             "name": "glasses",
+            "type": "uint48"
+          },
+          {
+            "internalType": "bool",
+            "name": "oneOfOne",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint48",
+            "name": "oneOfOneIndex",
             "type": "uint48"
           }
         ],

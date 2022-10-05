@@ -55,9 +55,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     // The internal noun ID tracker
     uint256 private _currentNounId;
 
-    // The last one of one ID
-    uint48 public lastOneOfOneId;
-
     // keep track of amont of one of ones to know when we upload more.
     // allows us to skip expensive one of one minting ops if we need have minted
     // all available one of ones
@@ -191,6 +188,10 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         onlyMinter
         returns (uint256)
     {
+        if (_currentNounId <= 1820 && _currentNounId % 10 == 0) {
+            _mintTo(noundersDAO, _currentNounId++, false, 0);
+        }
+
         uint256 oneCount = descriptor.oneOfOnesCount();
 
         // validation; ensure a valid one of one index is requested
@@ -198,9 +199,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
             uint256(oneOfOneId) < oneCount && oneOfOneId >= 0,
             "one of one does not exist"
         );
-
-        // validation; ensure all oneOfOnes haven't already been minted
-        require(lastOneOfOneCount < oneCount, "all one of ones minted");
 
         // validation; only one edition of each one of one can exist
         /* TODO: uncomment
@@ -214,7 +212,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
 
         // set that we have minted a one of one at index
         oneOfOneSupply[oneOfOneId] = 1;
-        lastOneOfOneId = oneOfOneId;
         return (nounId);
     }
 

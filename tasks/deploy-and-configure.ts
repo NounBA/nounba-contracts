@@ -27,17 +27,27 @@ task('deploy-and-configure', 'Deploy and configure all contracts')
   .setAction(async (args, { run }) => {
     // Deploy the Nouns DAO contracts and return deployment information
     const contracts = await run('deploy', args);
-
+    /*
     // Verify the contracts on Etherscan
     await run('verify-etherscan', {
       contracts,
     });
+    */
 
     // Populate the on-chain art
     await run('populate-descriptor', {
       nftDescriptor: contracts.NFTDescriptorV2.address,
       nounsDescriptor: contracts.NounsDescriptorV2.address,
     });
+
+    // Add second AuctionHouseProxy address to minters whitelist
+    const nounsToken = contracts.NounsToken.instance.attach(
+      contracts.NounsToken.address,
+    );
+    const addToWhitelistTx = await nounsToken.addAddressToWhitelist(contracts.NounsAuctionHouseProxy2.address, {
+      gasLimit: 1_000_000,
+    });
+    console.log(addToWhitelistTx);
 
     // Transfer ownership of all contract except for the auction house.
     // We must maintain ownership of the auction house to kick off the first auction.
@@ -55,13 +65,23 @@ task('deploy-and-configure', 'Deploy and configure all contracts')
       const auctionHouse = contracts.NounsAuctionHouse.instance.attach(
         contracts.NounsAuctionHouseProxy.address,
       );
+      const auctionHouse2 = contracts.NounsAuctionHouse.instance.attach(
+        contracts.NounsAuctionHouseProxy2.address,
+      );
       await auctionHouse.unpause({
         gasLimit: 1_000_000,
       });
       await auctionHouse.transferOwnership(executorAddress);
       console.log(
-        'Started the first auction and transferred ownership of the auction house to the executor.',
+        'Started the first auction house auction and transferred ownership of the auction house to the executor.',
       );
+      await auctionHouse2.unpause({
+        gasLimit: 1_000_000,
+      });
+      console.log(
+        'Started the second auction house auction and transferred ownership of the auction house to the executor.',
+      );
+      await auctionHouse2.transferOwnership(executorAddress);
     }
 
     // Optionally write the deployed addresses to the SDK and subgraph configs.

@@ -10,18 +10,21 @@ promptjs.delimiter = '';
 
 const proxyRegistries: Record<number, string> = {
   [ChainId.Mainnet]: '0xa5409ec958c83c3f309868babaca7c86dcb077c1',
+  [ChainId.Goerli]: '0xa5409ec958c83c3f309868babaca7c86dcb077c1',
   [ChainId.Rinkeby]: '0xf57b2c51ded3a29e6891aba85459d600256cf317',
 };
 const wethContracts: Record<number, string> = {
   [ChainId.Mainnet]: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
   [ChainId.Ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
+  [ChainId.Goerli]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
   [ChainId.Rinkeby]: '0xc778417e063141139fce010982780140aa0cd5ab',
   [ChainId.Kovan]: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
 };
 
 const NOUNS_ART_NONCE_OFFSET = 4;
 const AUCTION_HOUSE_PROXY_NONCE_OFFSET = 9;
-const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 12;
+const AUCTION_HOUSE_PROXY_2_NONCE_OFFSET = 10;
+const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 13;
 
 task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsToken')
   .addFlag('autoDeploy', 'Deploy all contracts without user interaction')
@@ -79,6 +82,30 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
     'quorumVotesBps',
     'Votes required for quorum (basis points)',
     1_000 /* 10% */,
+    types.int,
+  )
+  .addOptionalParam(
+    'auctionHouse1NextOneOfOneIndex',
+    'The oneOfOneIndex of the next NFT to be auctioned by AH1',
+    1,
+    types.int,
+  )
+  .addOptionalParam(
+    'auctionHouse1MaxOneOfOneIndex',
+    'The last oneOfOneIndex that the AH1 contract should be allowed to mint',
+    15,
+    types.int,
+  )
+  .addOptionalParam(
+    'auctionHouse2NextOneOfOneIndex',
+    'The oneOfOneIndex of the next NFT to be auctioned by AH2',
+    16,
+    types.int,
+  )
+  .addOptionalParam(
+    'auctionHouse2MaxOneOfOneIndex',
+    'The last oneOfOneIndex that the AH2 contract should be allowed to mint',
+    30,
     types.int,
   )
   .setAction(async (args, { ethers }) => {
@@ -160,6 +187,8 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
               args.auctionReservePrice,
               args.auctionMinIncrementBidPercentage,
               args.auctionDuration,
+              args.auctionHouse1NextOneOfOneIndex,
+              args.auctionHouse1MaxOneOfOneIndex,
             ]),
         ],
         waitForConfirmation: true,
@@ -172,6 +201,24 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
             );
           }
         },
+      },
+      NounsAuctionHouseProxy2: {
+        artifactName: 'NounsAuctionHouseProxy',
+        args: [
+          () => deployment.NounsAuctionHouse.address,
+          () => deployment.NounsAuctionHouseProxyAdmin.address,
+          () =>
+            new Interface(NounsAuctionHouseABI).encodeFunctionData('initialize', [
+              deployment.NounsToken.address,
+              args.weth,
+              args.auctionTimeBuffer,
+              args.auctionReservePrice,
+              args.auctionMinIncrementBidPercentage,
+              args.auctionDuration,
+              args.auctionHouse2NextOneOfOneIndex,
+              args.auctionHouse2MaxOneOfOneIndex,
+            ]),
+        ],
       },
       NounsDAOExecutor: {
         args: [expectedNounsDAOProxyAddress, args.timelockDelay],
@@ -226,7 +273,9 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
         gasPrice = ethers.utils.parseUnits(result.gasPrice.toString(), 'gwei');
       }
 
-      const factory = await ethers.getContractFactory(name, {
+      const artifactName = contract.artifactName || name;
+
+      const factory = await ethers.getContractFactory(artifactName, {
         libraries: contract?.libraries?.(),
       });
 

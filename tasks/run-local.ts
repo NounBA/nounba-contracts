@@ -69,13 +69,13 @@ task(
     });
   console.log(seed0);
 
+  /*
   const noun0 = await contracts.NounsToken.instance
     .attach(contracts.NounsToken.instance.address)
     .tokenURI(0, {
       gasLimit: 9_000_000_000_000_000,
     });
   console.log(noun0);
-  /*
   */
 
   // Transfer ownership
