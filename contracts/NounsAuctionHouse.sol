@@ -233,7 +233,17 @@ contract NounsAuctionHouse is
             "one of one does not exist"
         );
         address noundersDAO = nouns.noundersDAO();
-        if (nextOneOfOneIndex % 6 == 0) {
+        if (
+            nextOneOfOneIndex % 7 == 1 &&
+            nextOneOfOneIndex >= 1 &&
+            nextOneOfOneIndex <= 20
+        ) {
+            nouns.mintOneOfOne(noundersDAO, nextOneOfOneIndex++);
+        } else if (
+            nextOneOfOneIndex % 7 == 0 &&
+            nextOneOfOneIndex >= 21 &&
+            nextOneOfOneIndex <= 40
+        ) {
             nouns.mintOneOfOne(noundersDAO, nextOneOfOneIndex++);
         }
         try nouns.mintOneOfOne(address(this), nextOneOfOneIndex++) returns (
