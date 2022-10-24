@@ -34,19 +34,19 @@ task('deploy-local', 'Deploy contracts to hardhat')
   .addOptionalParam(
     'auctionHouse1MaxOneOfOneIndex',
     'The last oneOfOneIndex that the AH1 contract should be allowed to mint',
-    15,
+    20,
     types.int,
   )
   .addOptionalParam(
     'auctionHouse2NextOneOfOneIndex',
     'The oneOfOneIndex of the next NFT to be auctioned by AH2',
-    16,
+    21,
     types.int,
   )
   .addOptionalParam(
     'auctionHouse2MaxOneOfOneIndex',
     'The last oneOfOneIndex that the AH2 contract should be allowed to mint',
-    30,
+    40,
     types.int,
   )
   .addOptionalParam('timelockDelay', 'The timelock delay (seconds)', 60 * 60 * 24 * 2, types.int) // Default: 2 days
