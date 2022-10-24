@@ -232,6 +232,10 @@ contract NounsAuctionHouse is
             nextOneOfOneIndex <= maxOneOfOneIndex,
             "one of one does not exist"
         );
+        address noundersDAO = nouns.noundersDAO();
+        if (nextOneOfOneIndex % 6 == 0) {
+            nouns.mintOneOfOne(noundersDAO, nextOneOfOneIndex++);
+        }
         try nouns.mintOneOfOne(address(this), nextOneOfOneIndex++) returns (
             uint256 nounId
         ) {

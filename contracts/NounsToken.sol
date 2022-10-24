@@ -188,10 +188,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         onlyMinter
         returns (uint256)
     {
-        if (_currentNounId <= 1820 && _currentNounId % 10 == 0) {
-            _mintTo(noundersDAO, _currentNounId++, false, 0);
-        }
-
         uint256 oneCount = descriptor.oneOfOnesCount();
 
         // validation; ensure a valid one of one index is requested

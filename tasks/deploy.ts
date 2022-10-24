@@ -51,7 +51,8 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
   .addOptionalParam(
     'auctionDuration',
     'The auction duration (seconds)',
-    60 * 60 * 24 /* 24 hours */,
+    // 60 * 60 * 24 /* 24 hours */,
+    60 * 5 /* 5 mins */,
     types.int,
   )
   .addOptionalParam(
@@ -93,19 +94,19 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
   .addOptionalParam(
     'auctionHouse1MaxOneOfOneIndex',
     'The last oneOfOneIndex that the AH1 contract should be allowed to mint',
-    15,
+    20,
     types.int,
   )
   .addOptionalParam(
     'auctionHouse2NextOneOfOneIndex',
     'The oneOfOneIndex of the next NFT to be auctioned by AH2',
-    16,
+    21,
     types.int,
   )
   .addOptionalParam(
     'auctionHouse2MaxOneOfOneIndex',
     'The last oneOfOneIndex that the AH2 contract should be allowed to mint',
-    30,
+    40,
     types.int,
   )
   .setAction(async (args, { ethers }) => {

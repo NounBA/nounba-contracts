@@ -24,7 +24,7 @@ task('deploy-local', 'Deploy contracts to hardhat')
     5,
     types.int,
   )
-  .addOptionalParam('auctionDuration', 'The auction duration (seconds)', 60 * 2, types.int) // Default: 2 minutes
+  .addOptionalParam('auctionDuration', 'The auction duration (seconds)', 60 * 3, types.int) // Default: 2 minutes
   .addOptionalParam(
     'auctionHouse1NextOneOfOneIndex',
     'The oneOfOneIndex of the next NFT to be auctioned by AH1',

@@ -17,8 +17,8 @@ task('update-configs', 'Write the deployed addresses to the SDK and subgraph con
 
       // Update SDK addresses
       const sdkPath = join(__dirname, '../../nouns-sdk');
-      const addressesPath = join(sdkPath, 'src/contract/addresses.json');
-      const addresses = JSON.parse(readFileSync(addressesPath, 'utf8'));
+      const addressesPath = join(sdkPath, 'src/addresses.json');
+      const addresses: any = {};
       addresses[chainId] = {
         nounsToken: contracts.NounsToken.address,
         nounsSeeder: contracts.NounsSeeder.address,
@@ -35,7 +35,10 @@ task('update-configs', 'Write the deployed addresses to the SDK and subgraph con
         nounsDAOProxy: contracts.NounsDAOProxy.address,
         nounsDAOLogicV1: contracts.NounsDAOLogicV1.address,
       };
+      console.log('Addresses:');
+      console.log(addresses);
       writeFileSync(addressesPath, JSON.stringify(addresses, null, 2));
+      /*
       try {
         execSync('yarn build', {
           cwd: sdkPath,
@@ -43,6 +46,7 @@ task('update-configs', 'Write the deployed addresses to the SDK and subgraph con
       } catch {
         console.log('Failed to re-build `@nouns/sdk`. Please rebuild manually.');
       }
+      */
       console.log('Addresses written to the Nouns SDK.');
 
       // Generate subgraph config

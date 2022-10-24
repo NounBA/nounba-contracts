@@ -83,4 +83,6 @@ interface INounsToken is IERC721 {
     function removeAddressesFromWhitelist(address[] memory addrs)
         external
         returns (bool success);
+
+    function noundersDAO() external view returns (address);
 }
