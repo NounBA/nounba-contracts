@@ -9,9 +9,7 @@ task('deploy-and-configure', 'Deploy and configure all contracts')
   .addOptionalParam('noundersdao', 'The nounders DAO contract address')
   .addOptionalParam(
     'auctionTimeBuffer',
-    'The auction time buffer (seconds)',
-    60 * 60 /* 60 minutes */,
-    types.int,
+    'The auction time buffer (seconds)'
   )
   .addOptionalParam('auctionReservePrice', 'The auction reserve price (wei)')
   .addOptionalParam(
@@ -27,12 +25,10 @@ task('deploy-and-configure', 'Deploy and configure all contracts')
   .setAction(async (args, { run }) => {
     // Deploy the Nouns DAO contracts and return deployment information
     const contracts = await run('deploy', args);
-    /*
     // Verify the contracts on Etherscan
     await run('verify-etherscan', {
       contracts,
     });
-    */
 
     // Populate the on-chain art
     await run('populate-descriptor', {

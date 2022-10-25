@@ -285,7 +285,7 @@ contract NounsAuctionHouse is
         auction.settled = true;
 
         if (_auction.bidder == address(0)) {
-            nouns.burn(_auction.nounId);
+            nouns.transferFrom(address(this), owner(), _auction.nounId);
         } else {
             nouns.transferFrom(address(this), _auction.bidder, _auction.nounId);
         }

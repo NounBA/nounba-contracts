@@ -30,6 +30,7 @@ task('update-configs', 'Write the deployed addresses to the SDK and subgraph con
           : contracts.NFTDescriptor.address,
         nounsAuctionHouse: contracts.NounsAuctionHouse.address,
         nounsAuctionHouseProxy: contracts.NounsAuctionHouseProxy.address,
+        nounsAuctionHouseProxy2: contracts.NounsAuctionHouseProxy2.address,
         nounsAuctionHouseProxyAdmin: contracts.NounsAuctionHouseProxyAdmin.address,
         nounsDaoExecutor: contracts.NounsDAOExecutor.address,
         nounsDAOProxy: contracts.NounsDAOProxy.address,
