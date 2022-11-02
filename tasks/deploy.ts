@@ -254,6 +254,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
 
     for (const [name, contract] of Object.entries(contracts)) {
       let gasPrice = await ethers.provider.getGasPrice();
+      console.log('Gas price: ', gasPrice);
       if (!args.autoDeploy) {
         const gasInGwei = Math.round(Number(ethers.utils.formatUnits(gasPrice, 'gwei')));
 
@@ -309,7 +310,8 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
             },
           },
         ]);
-        if (result.operation === 'SKIP') {
+        console.log(result);
+        if (result.operation === 'SKIP' || result.confirm === 'SKIP') {
           console.log(`Skipping ${name} deployment...`);
           continue;
         }
@@ -319,6 +321,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
         }
       }
       console.log(`Deploying ${name}...`);
+      console.log(`With args ${JSON.stringify(contract.args)}...`);
 
       const deployedContract = await factory.deploy(
         ...(contract.args?.map(a => (typeof a === 'function' ? a() : a)) ?? []),

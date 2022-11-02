@@ -106,7 +106,11 @@ contract NounsAuctionHouse is
         whenNotPaused
     {
         _settleAuction();
-        _createAuction();
+        if (nextOneOfOneIndex <= maxOneOfOneIndex) {
+            _createAuction();
+        } else {
+            _pause();
+        }
     }
 
     /**
@@ -291,7 +295,15 @@ contract NounsAuctionHouse is
         }
 
         if (_auction.amount > 0) {
-            _safeTransferETHWithFallback(owner(), _auction.amount);
+            // Send 31% to Referees
+            // Send rest to NounBA Dao
+            address noundersDAO = nouns.noundersDAO();
+            uint256 percentageNounders = 31;
+            uint256 amountNounders = (_auction.amount * percentageNounders) /
+                100;
+            uint256 remainder = _auction.amount - amountNounders;
+            _safeTransferETHWithFallback(noundersDAO, amountNounders);
+            _safeTransferETHWithFallback(owner(), remainder);
         }
 
         emit AuctionSettled(_auction.nounId, _auction.bidder, _auction.amount);

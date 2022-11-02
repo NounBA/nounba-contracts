@@ -1,8 +1,8 @@
 {
-  "name": "Nouns",
-  "description": "One Noun, every day, forever.\r\n\r\nnouns.wtf",
-  "image": "ipfs://QmNdUibRHNqX2byJLtCD3ofn65cfCtvXdQnV87wRjqWf96",
-  "external_link": "https://nouns.wtf",
+  "name": "NounBA",
+  "description": "A nounish community of basketball fans.\r\n\r\nnounba.wtf",
+  "image": "ipfs://bafkreia5iljym6ye4ha2p4kdk7xaw5mka62wsavjdjqxwradxmazuhwqsi",
+  "external_link": "https://nounba.wtf",
   "seller_fee_basis_points": 0,
   "fee_recipient": "0x0000000000000000000000000000000000000000"
 }

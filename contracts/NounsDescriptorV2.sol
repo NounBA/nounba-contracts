@@ -509,9 +509,13 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
         returns (string memory)
     {
         string memory nounId = tokenId.toString();
-        string memory name = string(abi.encodePacked("Noun ", nounId));
+        string memory name = string(abi.encodePacked("NounBA ", nounId));
         string memory description = string(
-            abi.encodePacked("Noun ", nounId, " is a member of the Nouns DAO")
+            abi.encodePacked(
+                "NounBA ",
+                nounId,
+                " is a member of the NounBA DAO"
+            )
         );
 
         return genericDataURI(name, description, seed);
